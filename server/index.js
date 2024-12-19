@@ -8,11 +8,10 @@ const { app, server } = require('./socket/index');
 
 // CORS Configuration
 const allowedOrigins = [
-  "https://chat-spotvibe.vercel.app", // Frontend hosted on Vercel
-  "http://localhost:3000", // Local development
+  "https://chat-spotvibe.vercel.app",
+  "http://localhost:3000", // For local development
 ];
 
-// Set up CORS middleware
 app.use(
   cors({
     origin: (origin, callback) => {
@@ -22,34 +21,33 @@ app.use(
         callback(new Error("CORS error: Origin not allowed."));
       }
     },
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Methods allowed
-    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"], // Allowed headers
-    credentials: true, // Allow cookies to be sent
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+    credentials: true,
   })
 );
 
-// Handle OPTIONS requests (preflight requests)
-app.options('*', cors());
+// Explicitly handle preflight requests
+app.options('*', (req, res) => {
+  res.header("Access-Control-Allow-Origin", req.headers.origin || "*");
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With");
+  res.sendStatus(204); // Send OK response for OPTIONS
+});
 
-// Use JSON and cookie parsing middleware
 app.use(express.json());
 app.use(cookieParser());
 
 const PORT = process.env.PORT || 8080;
 
-// Test Endpoint
 app.get('/', (req, res) => {
-  res.json({
-    message: `Server running at ${PORT}`,
-  });
+  res.json({ message: `Server running at ${PORT}` });
 });
 
-// API Routes
 app.use('/api', router);
 
-// Connect to the database and start the server
 connectDB().then(() => {
   server.listen(PORT, () => {
-    console.log(`Server running at https://chat-backend-wheat-seven.vercel.app/api`);
+    console.log(`Server running at https://chat-backend-wheat-seven.vercel.app`);
   });
 });
