@@ -6,7 +6,7 @@ const router = require('./routes/index');
 const cookieParser = require('cookie-parser');
 const { app, server } = require('./socket/index');
 
-// CORS Configuration
+// CORS Configuration 
 const allowedOrigins = [
   "https://chat-spotvibe.vercel.app", // Your frontend on Vercel
   "http://localhost:3000" // Local development
