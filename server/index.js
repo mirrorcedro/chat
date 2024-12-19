@@ -17,9 +17,10 @@ app.use(cookiesParser());
 
 // Serve static files and handle routes dynamically based on the environment
 if (process.env.NODE_ENV === 'production') {
-    const clientBuildPath = path.join(__dirname, './client/build');
+    const clientBuildPath = path.resolve(__dirname, '../client/build');  // Correct path
     app.use(express.static(clientBuildPath));
 
+    // Serve the React app in production
     app.get('*', (req, res) => {
         res.sendFile(path.join(clientBuildPath, 'index.html'));
     });
