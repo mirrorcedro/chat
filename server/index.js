@@ -1,94 +1,62 @@
-const express = require("express");
-const cors = require("cors");
-require("dotenv").config();
-const connectDB = require("./config/connectDB");
-const router = require("./routes/index");
-const cookieParser = require("cookie-parser");
-const { app, server, io } = require("./socket/index"); // Ensure `io` is exported correctly
-const Message = require("./models/Message"); // Adjust the model import as per your structure
+const express = require('express');
+const cors = require('cors');
+require('dotenv').config();
+const connectDB = require('./config/connectDB');
+const router = require('./routes/index');
+const cookieParser = require('cookie-parser');
+const { app, server, io } = require('./socket/index'); // Ensure io is imported from your socket implementation
+const Message = require('./models/Message'); // Import your Message model
 
-// Define allowed origins
-const allowedOrigins = [
-  process.env.FRONTEND_URL || "https://chat-spotvibe.vercel.app", // Default to your Vercel frontend
-  "http://localhost:3000", // Local development
-];
-
-// CORS Configuration
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      // Allow requests from allowed origins or no origin (e.g., Postman, mobile apps)
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error(`CORS error: Origin ${origin} not allowed.`));
-      }
-    },
-    credentials: true, // Allow cookies to be sent with requests
-  })
-);
-
+// Middleware
+app.use(cors({
+    origin: process.env.FRONTEND_URL || 'https://chat-spotvibe.vercel.app',
+    credentials: true
+}));
 app.use(express.json());
 app.use(cookieParser());
 
+// Server port
 const PORT = process.env.PORT || 8080;
 
-// Test Endpoint
-app.get("/", (req, res) => {
-  res.json({
-    message: `Server running at ${PORT}`,
-  });
+// Root route
+app.get('/', (req, res) => {
+    res.json({
+        message: "Server running at " + PORT
+    });
 });
 
-// Email Endpoint for Frontend
-app.post("/api/email", (req, res) => {
-  const { email } = req.body;
+// API routes
+app.use('/api', router);
 
-  if (!email) {
-    return res.status(400).json({ error: "Email is required." });
-  }
+// Socket event for deleting a message
+io.on('connection', (socket) => {
+    console.log('A user connected:', socket.id);
 
-  try {
-    // Add your email handling logic here (e.g., send an email or save to DB)
-    res.status(200).json({ message: "Email received successfully." });
-  } catch (error) {
-    console.error("Error handling email:", error);
-    res.status(500).json({ error: "Failed to process the email." });
-  }
+    socket.on('delete-message', async (data) => {
+        const { messageId } = data;
+
+        try {
+            // Find and delete the message from the database
+            await Message.findByIdAndDelete(messageId);
+
+            // Notify all clients about the deleted message
+            io.emit('message-deleted', messageId);
+        } catch (error) {
+            console.error('Failed to delete message:', error);
+            socket.emit('error', { message: 'Failed to delete message' });
+        }
+    });
+
+    socket.on('disconnect', () => {
+        console.log('A user disconnected:', socket.id);
+    });
 });
 
-// API Routes
-app.use("/api", router);
-
-// Socket Event: Delete Message
-io.on("connection", (socket) => {
-  console.log("A user connected:", socket.id);
-
-  socket.on("delete-message", async (data) => {
-    const { messageId } = data;
-
-    try {
-      // Delete message from database
-      await Message.findByIdAndDelete(messageId);
-
-      // Notify all connected clients about the deletion
-      io.emit("message-deleted", messageId);
-
-      console.log(`Message deleted: ${messageId}`);
-    } catch (error) {
-      console.error("Error deleting message:", error);
-      socket.emit("error", { error: "Failed to delete message." });
-    }
-  });
-
-  socket.on("disconnect", () => {
-    console.log("User disconnected:", socket.id);
-  });
-});
-
-// Connect to Database and Start Server
+// Database connection and server start
 connectDB().then(() => {
-  server.listen(PORT, () => {
-    console.log(`Server running at https://chat-37zc.onrender.com/api`);
-  });
+    server.listen(PORT, () => {
+        console.log("Server running at " + PORT);
+    });
+}).catch((error) => {
+    console.error("Failed to connect to the database:", error);
 });
