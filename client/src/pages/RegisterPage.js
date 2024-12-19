@@ -46,35 +46,46 @@ const RegisterPage = () => {
     setUploadPhoto(null)
   }
 
-  const handleSubmit = async(e)=>{
-    e.preventDefault()
-    e.stopPropagation()
+  const handleSubmit = async (e) => {
+  e.preventDefault(); // Prevent the default form submission behavior
+  e.stopPropagation(); // Stop the event from propagating further
 
-    const URL = `${process.env.REACT_APP_BACKEND_URL}/api/register`
+  // Ensure the URL is properly formatted, avoiding double slashes
+  const URL = `${process.env.REACT_APP_BACKEND_URL}/api/register`.replace(/([^:]\/)\/+/g, "$1");
 
-    try {
-        const response = await axios.post(URL,data)
-        console.log("response",response)
+  try {
+    // Make the POST request to the backend API
+    const response = await axios.post(URL, data, {
+      headers: {
+        'Content-Type': 'application/json', // Inform the server of the data type
+      },
+      withCredentials: true, // Include credentials like cookies if needed
+    });
 
-        toast.success(response.data.message)
+    console.log('response', response); // Log the successful response
+    toast.success(response.data.message); // Notify the user of success
 
-        if(response.data.success){
-            setData({
-              name : "",
-              email : "",
-              password : "",
-              profile_pic : ""
-            })
+    // If registration is successful, clear the form and navigate to email verification
+    if (response.data.success) {
+      setData({
+        name: '',
+        email: '',
+        password: '',
+        profile_pic: '',
+      });
 
-            navigate('/email')
-
-        }
-    } catch (error) {
-        toast.error(error?.response?.data?.message)
+      navigate('/email'); // Navigate to the email verification page
     }
-    console.log('data',data)
+  } catch (error) {
+    console.error('Error:', error); // Log the error for debugging
+
+    // Extract the error message or show a default message
+    const errorMessage = error?.response?.data?.message || 'Registration failed. Please try again.';
+    toast.error(errorMessage); // Notify the user of the error
   }
 
+  console.log('data', data); // Log the current data for debugging
+};
 
   return (
     <div className='mt-5'>
