@@ -1,32 +1,55 @@
-const express = require('express')
-const cors = require('cors')
-require('dotenv').config()
-const connectDB = require('./config/connectDB')
-const router = require('./routes/index')
-const cookiesParser = require('cookie-parser')
-const { app, server } = require('./socket/index')
+const express = require('express');
+const cors = require('cors');
+require('dotenv').config();
+const connectDB = require('./config/connectDB');
+const router = require('./routes/index');
+const cookieParser = require('cookie-parser');
+const { app, server } = require('./socket/index');
 
-// const app = express()
-app.use(cors({
-    origin : process.env.FRONTEND_URL,
-    credentials : true
-}))
-app.use(express.json())
-app.use(cookiesParser())
+// CORS Configuration
+const allowedOrigins = [
+  "https://chat-spotvibe.vercel.app", // Frontend hosted on Vercel
+  "http://localhost:3000", // Local development
+];
 
-const PORT = process.env.PORT || 8080
+// Set up CORS middleware
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("CORS error: Origin not allowed."));
+      }
+    },
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Methods allowed
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"], // Allowed headers
+    credentials: true, // Allow cookies to be sent
+  })
+);
 
-app.get('/',(request,response)=>{
-    response.json({
-        message : "Server running at " + PORT
-    })
-})
+// Handle OPTIONS requests (preflight requests)
+app.options('*', cors());
 
-//api endpoints
-app.use('/api',router)
+// Use JSON and cookie parsing middleware
+app.use(express.json());
+app.use(cookieParser());
 
-connectDB().then(()=>{
-    server.listen(PORT,()=>{
-        console.log("server running at " + PORT)
-    })
-})
+const PORT = process.env.PORT || 8080;
+
+// Test Endpoint
+app.get('/', (req, res) => {
+  res.json({
+    message: `Server running at ${PORT}`,
+  });
+});
+
+// API Routes
+app.use('/api', router);
+
+// Connect to the database and start the server
+connectDB().then(() => {
+  server.listen(PORT, () => {
+    console.log(`Server running at https://chat-backend-wheat-seven.vercel.app/api`);
+  });
+});
