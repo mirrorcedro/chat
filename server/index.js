@@ -7,12 +7,23 @@ const cookiesParser = require('cookie-parser');
 const { app, server } = require('./socket/index');
 
 // CORS Configuration: Allow both the frontend URL and local development
+const allowedOrigins = [
+    process.env.FRONTEND_URL || 'https://chat-1-7oju.onrender.com',  // Add your deployed frontend URL
+    'http://localhost:3000'  // Allow local development URL
+];
+
+// CORS Middleware setup globally to handle all routes
 app.use(cors({
-    origin: [
-        process.env.FRONTEND_URL || 'https://chat-1-7oju.onrender.com',  // Add your deployed frontend URL
-        'http://localhost:3000'  // Allow local development URL
-    ],
-    credentials: true  // Enable credentials (cookies, authorization headers, etc.)
+    origin: function(origin, callback) {
+        // Allow requests from the listed origins, or allow no origin (for local requests)
+        if (allowedOrigins.includes(origin) || !origin) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    methods: ['GET', 'POST', 'OPTIONS'], // Allow GET, POST, OPTIONS methods
+    credentials: true, // Allow credentials (cookies, authorization headers, etc.)
 }));
 
 // Parse incoming JSON and cookies
@@ -31,15 +42,15 @@ app.get('/', (request, response) => {
 // API endpoints
 app.use('/api', router);
 
+// Handle preflight requests globally (for CORS)
+app.options('*', cors());
+
 // Socket.io CORS configuration
 const io = require('socket.io')(server, {
     cors: {
-        origin: [
-            process.env.FRONTEND_URL || 'https://chat-1-7oju.onrender.com',  // Add your deployed frontend URL
-            'http://localhost:3000'  // Allow local development URL
-        ],
+        origin: allowedOrigins,
         methods: ['GET', 'POST'],
-        credentials: true
+        credentials: true,
     }
 });
 
