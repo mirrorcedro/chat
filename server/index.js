@@ -7,22 +7,24 @@ const cookieParser = require("cookie-parser");
 const { app, server, io } = require("./socket/index"); // Ensure `io` is exported correctly
 const Message = require("./models/Message"); // Adjust the model import as per your structure
 
-// CORS Configuration
+// Define allowed origins
 const allowedOrigins = [
   process.env.FRONTEND_URL || "https://chat-spotvibe.vercel.app", // Default to your Vercel frontend
   "http://localhost:3000", // Local development
 ];
 
+// CORS Configuration
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (allowedOrigins.includes(origin) || !origin) {
+      // Allow requests from allowed origins or no origin (e.g., Postman, mobile apps)
+      if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
-        callback(new Error("Not allowed by CORS"));
+        callback(new Error(`CORS error: Origin ${origin} not allowed.`));
       }
     },
-    credentials: true,
+    credentials: true, // Allow cookies to be sent with requests
   })
 );
 
@@ -87,6 +89,6 @@ io.on("connection", (socket) => {
 // Connect to Database and Start Server
 connectDB().then(() => {
   server.listen(PORT, () => {
-    console.log(`Server running at https://chat-37zc.onrender.com/api/email`);
+    console.log(`Server running at https://chat-37zc.onrender.com/api`);
   });
 });
