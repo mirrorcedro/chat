@@ -4,7 +4,7 @@ require('dotenv').config();
 const connectDB = require('./config/connectDB');
 const router = require('./routes/index');
 const cookiesParser = require('cookie-parser');
-const path = require('path');
+const path = require('path'); // Import path for serving static files
 const { app, server } = require('./socket/index');
 
 // Middleware
@@ -17,13 +17,14 @@ app.use(cookiesParser());
 
 // Serve static files and handle routes dynamically based on the environment
 if (process.env.NODE_ENV === 'production') {
-    const clientBuildPath = path.join(__dirname, 'client', 'build'); // Ensure this path is correct
+    const clientBuildPath = path.join(__dirname, './client/build');
     app.use(express.static(clientBuildPath));
 
     app.get('*', (req, res) => {
         res.sendFile(path.join(clientBuildPath, 'index.html'));
     });
 } else {
+    // Development environment route for testing API
     app.get('/', (req, res) => {
         res.json({
             message: 'Server running in development mode',
