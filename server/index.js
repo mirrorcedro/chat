@@ -8,8 +8,8 @@ const { app, server } = require('./socket/index');
 
 // CORS Configuration
 const allowedOrigins = [
-  "https://chat-spotvibe.vercel.app",
-  "http://localhost:3000", // For local development
+  "https://chat-spotvibe.vercel.app", // Your frontend on Vercel
+  "http://localhost:3000" // Local development
 ];
 
 app.use(
@@ -18,7 +18,7 @@ app.use(
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
-        callback(new Error("CORS error: Origin not allowed."));
+        callback(new Error('Not allowed by CORS'));
       }
     },
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
@@ -27,12 +27,12 @@ app.use(
   })
 );
 
-// Explicitly handle preflight requests
+// Handle preflight OPTIONS requests
 app.options('*', (req, res) => {
-  res.header("Access-Control-Allow-Origin", req.headers.origin || "*");
-  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With");
-  res.sendStatus(204); // Send OK response for OPTIONS
+  res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+  res.sendStatus(204); // No Content
 });
 
 app.use(express.json());
@@ -48,6 +48,6 @@ app.use('/api', router);
 
 connectDB().then(() => {
   server.listen(PORT, () => {
-    console.log(`Server running at https://chat-backend-wheat-seven.vercel.app`);
+    console.log(`Server running at ${PORT}`);
   });
 });
