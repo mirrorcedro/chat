@@ -32,6 +32,7 @@ const MessagePage = () => {
   const params = useParams();
   const socketConnection = useSelector(state => state?.user?.socketConnection);
   const user = useSelector(state => state?.user);
+  const baseURL = useSelector(state => state?.user?.baseURL);  // Get baseURL from Redux
   const [dataUser, setDataUser] = useState({
     name: "",
     email: "",
@@ -70,7 +71,7 @@ const MessagePage = () => {
     setLoading(true);  // Start loading
 
     try {
-      const uploadPhoto = await uploadFile(file);  // Ensure `uploadFile` returns a URL
+      const uploadPhoto = await uploadFile(file, baseURL);  // Ensure `uploadFile` handles baseURL
       setMessage(prev => ({
         ...prev,
         [type]: uploadPhoto.url // Set the URL for the correct file type

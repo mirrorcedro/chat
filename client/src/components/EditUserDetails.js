@@ -4,7 +4,7 @@ import uploadFile from '../helpers/uploadFile';
 import Divider from './Divider';
 import axios from 'axios';
 import toast from 'react-hot-toast';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { setUser } from '../redux/userSlice';
 
 const EditUserDetails = ({ onClose, user }) => {
@@ -16,24 +16,23 @@ const EditUserDetails = ({ onClose, user }) => {
   const uploadPhotoRef = useRef();
   const dispatch = useDispatch();
 
+  // Retrieve the base URL from Redux state
+  const baseURL = useSelector((state) => state.user.baseURL);
+
   useEffect(() => {
-    setData((prev) => {
-      return {
-        ...prev,
-        ...user,
-      };
-    });
+    setData((prev) => ({
+      ...prev,
+      ...user,
+    }));
   }, [user]);
 
   const handleOnChange = (e) => {
     const { name, value } = e.target;
 
-    setData((prev) => {
-      return {
-        ...prev,
-        [name]: value,
-      };
-    });
+    setData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   const handleOpenUploadPhoto = (e) => {
@@ -48,19 +47,17 @@ const EditUserDetails = ({ onClose, user }) => {
 
     const uploadPhoto = await uploadFile(file);
 
-    setData((prev) => {
-      return {
-        ...prev,
-        profile_pic: uploadPhoto?.url,
-      };
-    });
+    setData((prev) => ({
+      ...prev,
+      profile_pic: uploadPhoto?.url,
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     e.stopPropagation();
     try {
-      const URL = `${process.env.REACT_APP_BACKEND_URL}/api/update-user`;
+      const URL = `${baseURL}/api/update-user`.replace(/([^:]\/)\/+/g, "$1");
 
       const response = await axios({
         method: 'post',
@@ -109,7 +106,9 @@ const EditUserDetails = ({ onClose, user }) => {
             <div className='my-1 flex items-center gap-4'>
               <Avatar width={40} height={40} imageUrl={data?.profile_pic} name={data?.name} />
               <label htmlFor='profile_pic'>
-                <button className='font-semibold' onClick={handleOpenUploadPhoto}>Change Photo</button>
+                <button className='font-semibold' onClick={handleOpenUploadPhoto}>
+                  Change Photo
+                </button>
                 <input
                   type='file'
                   id='profile_pic'
@@ -123,8 +122,18 @@ const EditUserDetails = ({ onClose, user }) => {
 
           <Divider />
           <div className='flex gap-2 w-fit ml-auto '>
-            <button onClick={onClose} className='border-primary border text-primary px-4 py-1 rounded hover:bg-primary hover:text-white'>Cancel</button>
-            <button type="submit" className='border-primary bg-primary text-white border px-4 py-1 rounded hover:bg-secondary'>Save</button>
+            <button
+              onClick={onClose}
+              className='border-primary border text-primary px-4 py-1 rounded hover:bg-primary hover:text-white'
+            >
+              Cancel
+            </button>
+            <button
+              type='submit'
+              className='border-primary bg-primary text-white border px-4 py-1 rounded hover:bg-secondary'
+            >
+              Save
+            </button>
           </div>
         </form>
       </div>

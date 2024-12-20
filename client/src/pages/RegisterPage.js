@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import uploadFile from '../helpers/uploadFile';
 import axios from 'axios'
 import toast from 'react-hot-toast';
+import { useSelector } from 'react-redux';
 
 const RegisterPage = () => {
   const [data,setData] = useState({
@@ -12,6 +13,9 @@ const RegisterPage = () => {
     password : "",
     profile_pic : ""
   })
+
+  const baseURL = useSelector(state => state.user.baseURL);
+  
   const [uploadPhoto,setUploadPhoto] = useState("")
   const navigate = useNavigate()
 
@@ -50,17 +54,17 @@ const RegisterPage = () => {
   e.preventDefault(); // Prevent the default form submission behavior
   e.stopPropagation(); // Stop the event from propagating further
 
-  // Ensure the URL is properly formatted, avoiding double slashes
-  const URL = `${process.env.REACT_APP_BACKEND_URL}/api/register`.replace(/([^:]\/)\/+/g, "$1");
+    // Ensure the URL is properly formatted to avoid double slashes
+    const URL = `${baseURL}/api/register`.replace(/([^:]\/)\/+/g, "$1");
 
-  try {
-    // Make the POST request to the backend API
-    const response = await axios.post(URL, data, {
-      headers: {
-        'Content-Type': 'application/json', // Inform the server of the data type
-      },
-      withCredentials: true, // Include credentials like cookies if needed
-    });
+    try {
+      // Make the POST request to the backend API
+      const response = await axios.post(URL, data, {
+        headers: {
+          'Content-Type': 'application/json', // Inform the server of the data type
+        },
+        withCredentials: true, // Include credentials like cookies if needed
+      });
 
     console.log('response', response); // Log the successful response
     toast.success(response.data.message); // Notify the user of success

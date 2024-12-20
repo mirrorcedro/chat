@@ -8,6 +8,7 @@ import logo from '../assets/spotvibelogo.png';
 import io from 'socket.io-client';
 
 const Home = () => {
+  const baseURL = useSelector(state => state.user.baseURL); // Fetch baseURL from Redux
   const user = useSelector(state => state.user);
   const dispatch = useDispatch();
   const navigate = useNavigate();

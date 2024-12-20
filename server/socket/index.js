@@ -1,33 +1,27 @@
-const express = require('express');
-const { Server } = require('socket.io');
-const http = require('http');
-const getUserDetailsFromToken = require('../helpers/getUserDetailsFromToken');
-const UserModel = require('../models/UserModel');
-const { ConversationModel, MessageModel } = require('../models/ConversationModel');
-const getConversation = require('../helpers/getConversation');
-require('dotenv').config();
+const express = require('express')
+const { Server } = require('socket.io')
+const http  = require('http')
+const getUserDetailsFromToken = require('../helpers/getUserDetailsFromToken')
+const UserModel = require('../models/UserModel')
+const { ConversationModel,MessageModel } = require('../models/ConversationModel')
+const getConversation = require('../helpers/getConversation')
 
-const app = express();
+const app = express()
 
 /***socket connection */
-const server = http.createServer(app);
-const io = new Server(server, {
+const server = http.createServer(app)
+const io = new Server(server,{
     cors: {
-        origin: process.env.FRONTEND_URL,
+        origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+        methods: ['GET', 'POST'],
         credentials: true,
     },
 });
 
-/**
- * Dynamic Backend URL based on environment
- */
-const PORT = process.env.PORT || 8080;
-const serverURL =
-    process.env.NODE_ENV === 'production'
-        ? process.env.BACKEND_URL || `https://chatspotvibe.onrender.com/`
-        : `http://localhost:${PORT}`;
 
-console.log(`Socket server is set to run at: ${serverURL}`);
+/***
+ * socket running at http://localhost:8080/
+ */
 
 // Online users
 const onlineUser = new Set();

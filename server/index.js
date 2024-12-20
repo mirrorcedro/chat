@@ -42,7 +42,7 @@ app.use('/api', router);
 const PORT = process.env.PORT || 8080;
 const serverURL =
     process.env.NODE_ENV === 'production'
-        ? process.env.BACKEND_URL || `https://chatspotvibe.onrender.com/`
+        ? process.env.BACKEND_URL || `https://chat-1-p52j.onrender.com/`
         : `http://localhost:${PORT}`;
 
 // Connect to the database and start the server
